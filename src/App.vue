@@ -1,21 +1,22 @@
 <template>
   <div id="app">
     <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <div>
+    LUMOS TEXT EDITOR V2
+    </div>
+    <Editor/>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
+import Editor from './components/Editor.vue'
 export default {
   name: 'App',
   components: {
-    HelloWorld
+    Editor
   }
 }
-</script>
-
+</script> 
 <style>
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;

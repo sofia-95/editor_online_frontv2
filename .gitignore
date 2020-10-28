@@ -2,10 +2,6 @@
 node_modules
 /dist
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 36b2badf9ead98fd5879e9fa44b73d1fff6d07cf
 # local env files
 .env.local
 .env.*.local
@@ -23,8 +19,4 @@ pnpm-debug.log*
 *.ntvs*
 *.njsproj
 *.sln
-<<<<<<< HEAD
 *.sw?
-=======
-*.sw?
->>>>>>> 36b2badf9ead98fd5879e9fa44b73d1fff6d07cf
