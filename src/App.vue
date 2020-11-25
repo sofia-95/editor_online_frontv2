@@ -17,8 +17,7 @@
            <button :disabled="currentPage==3" v-on:click="changeToThree()">3</button>
          </div>
     </div>
-      
-    <Editor v-if="name && currentPage==1" id="editor"/>
+   <Editor v-if="name" id="editor" :editorData="dataEditor"/>
   </div>
 </template>
 
@@ -26,7 +25,6 @@
 import Editor from './components/Editor.vue'
 export default {
   name: 'App',
- 
   components: {
     Editor
   },
@@ -35,17 +33,24 @@ export default {
       editor: this.Editor,
       name: "",
       currentPage: 1,
+      dataEditor:"Init",
+      pageOne:"Page 1",
+      pageTwo:"Page 2",
+      pageThree:"Page 3",
       log: function(){
         this.name = document.getElementById("login").value;
       },
       changeToOne: function(){
         this.currentPage = 1;
+        this.dataEditor=this.pageOne;
       },
       changeToTwo: function(){
         this.currentPage = 2;
+        this.dataEditor=this.pageTwo;
       },
       changeToThree: function(){
         this.currentPage = 3;
+        this.dataEditor=this.pageThree;
       }
     }
   },
