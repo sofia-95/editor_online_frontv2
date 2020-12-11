@@ -6,13 +6,17 @@
 
 <script>
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
-
+import io from 'socket.io-client';
 export default {
   name: "Editor",
   props:["editorData"],
   methods:{
       onEditorInput(){
-        this.$emit("update-data",this.content)
+        this.socket.emit('SEND_DOCUMENT', {
+          user: 'Michel',
+          doc: this.content
+          });
+          console.log("edit sent !")
       }
   },
   data() {
@@ -21,7 +25,11 @@ export default {
       content:this.editorData,
       editorConfig:{
       },
+      socket : io('http://localhost:3000', {
+        transports: ['websocket'],
+        upgrade: false
+      }),
     }
-  }
+  },
 };
 </script>
