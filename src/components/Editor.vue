@@ -80,6 +80,7 @@ class Document {
     this.historyList=historyList
   }
 }
+import io from 'socket.io-client';
 export default {
   name: "Editor",
   props:["editorData"],
@@ -114,6 +115,13 @@ export default {
       handleClose(done) {
             done();
       },
+      onEditorInput(){
+        this.socket.emit('SEND_DOCUMENT', {
+          user: 'Michel',
+          doc: this.content
+          });
+          console.log("edit sent !")
+      }
   },
   data() {
     return {
@@ -124,6 +132,11 @@ export default {
       dialogVisible: false,
       currentDocument:new Document(0,'Nouveau Doc',[new History("Eric","02/01/2020","Fred")]),
       currentHistory:'',
+    content:this.editorData, editorConfig:{ },
+           socket : io('http://localhost:3000', {
+        transports: ['websocket'],
+        upgrade: false
+      }),
       documentList:[
         new Document(Math.random(),'Document1',[new History("Eric","02/01/2020","Fred t"), new History("Fred","01/01/2020","Fred testo manger"),new History("Fred","03/01/2020","Fred testo")]),
         new Document(Math.random(),'Document3',[new History("Paul","04/01/2020","Vue"),new History("Charles","05/01/2020","Vue JS")]),
@@ -136,7 +149,7 @@ export default {
       return this.documentList.filter(doc=>{
         return doc.title.toLowerCase().includes(this.search.toLowerCase());
       })
-    }
+  },
   }
 };
 </script>
