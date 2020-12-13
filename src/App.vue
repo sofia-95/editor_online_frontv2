@@ -11,13 +11,8 @@
     </div>
     <div v-if="name">
          Logged as {{name}}<br/>
-         <div>
-           <button :disabled="currentPage==1" v-on:click="changeToOne()">1</button>
-           <button :disabled="currentPage==2" v-on:click="changeToTwo()">2</button>
-           <button :disabled="currentPage==3" v-on:click="changeToThree()">3</button>
-         </div>
     </div>
-   <Editor v-if="name" id="editor" :key="dataEditor" :editorData="dataEditor" @update-data="updateDataEditor"/>
+      <Editor v-if="name" id="editor"/>
   </div>
 </template>
 
@@ -33,40 +28,11 @@ export default {
     return {
       editor: this.Editor,
       name: "",
-      currentPage: 1,
-      dataEditor:"Init",
-      pageOne:"Page 1",
-      pageTwo:"Page 2",
-      pageThree:"Page 3",
       log: function(){
         this.name = document.getElementById("login").value;
       },
      
     }
-  },
- methods: {
-    updateDataEditor(data) {
-      if (this.currentPage == 1){
-          this.pageOne = data;
-      }else if (this.currentPage == 2) {
-          this.pageTwo = data;
-      } else {
-        this.pageThree = data;
-      }
-    },
-     changeToOne(){
-        this.currentPage = 1;
-        this.dataEditor=this.pageOne;
-        console.log("de")
-      },
-      changeToTwo(){
-        this.currentPage = 2;
-        this.dataEditor=this.pageTwo;
-      },
-      changeToThree(){
-        this.currentPage = 3;
-        this.dataEditor=this.pageThree;
-      }
   },
 }
 </script> 
