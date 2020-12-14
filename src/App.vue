@@ -1,18 +1,11 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <div>
-    LUMOS TEXT EDITOR V2
-    </div>
     <div v-if="!name" class="container">
         <input type="text" id="login" name="login" required placeholder="Entrez votre nom (max 18 charactères)"
        minlength="1" maxlength="18" size="50">
        <button v-on:click="log()" id="okButton">OK</button>
     </div>
-    <div v-if="name">
-         Logged as {{name}}<br/>
-    </div>
-      <Editor v-if="name" id="editor"/>
+      <Editor v-if="name" id="editor" :loginName="name"/>
   </div>
 </template>
 
@@ -37,12 +30,28 @@ export default {
 }
 </script> 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600&display=swap');
+html, body {
+  font-family: 'Montserrat', sans-serif;
+}
+
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Montserrat', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+   position:fixed;
+    padding:0;
+    margin:0;
+    top:0;
+    left:0;
+    width: 100%;
+    height: 100%;
 }
+html, body {
+  height: 100vh;
+  width: 100vw;
+  background-color: #E4EFFF;
+}
+.ck-content {min-height:150px; }
 </style>

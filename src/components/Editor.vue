@@ -1,56 +1,82 @@
 <template>
   <div id="app">
-    Utilisateurs connectés :
-  <div v-for="user in usersList" v-bind:key="user">
-    <div>{{user}}</div>
-    </div>
-    <el-row :gutter="20">
-  <el-col :span="16">
-    <ckeditor :editor="editor" v-model="currentDocument.historyList[0].content" />
-  </el-col>
-  <el-col :span="8">
-  <el-button @click="() => appendDocument()" type="primary">Nouveau document</el-button>
+    <el-container>
+      <el-header height="100px" class="center">
+      <div class="center" style="width:100%;height:100%;text-align:center;">
+        LUMOS TEXT EDITOR V2
+      </div>
+      </el-header>
+  <el-container>
+    <el-aside width="400px" style="min-height:400px">
+      <div class="box" style="min-height:400px">
+    <el-row class="row">
   <el-input
-  placeholder="Entrez quelque chose"
+  placeholder="Rechercher un document"
   v-model="search"
   clearable>
 </el-input>
+    </el-row>
+    <el-row class="row">
   <div v-for="doc in filteredList" :key="doc.id">
   <div @click="() => changeDocument(doc)">
-    <el-row :gutter="20">
+    <el-row class="row" :gutter="20">
       <el-col :span="6" :offset="6">
       {{doc.title}}
   </el-col>
-  <el-col :span="6" :offset="6">
-  <el-button type="primary" size="small" @click="() => changeHistory(doc)">Historique</el-button>
+  <el-col :span="6" :offset="3">
+    <el-button type="primary" icon="el-icon-edit" size="small" @click="() => changeHistory(doc)" circle></el-button>
   </el-col>
     </el-row>
   </div>
   </div>
+    </el-row>
+      </div>
+      </el-aside>
+    <el-main>
+      <el-row>
+      <div class=box>
+      <el-row :gutter="20" class="center" style="width:100%;height:100%;text-align:center;">
+  <el-col :span="8">
+     <div style="display:flex;align-items:center;justify-content:center;">
+      <el-avatar src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"></el-avatar>
+        <span>{{loginName}}</span>
+    </div> 
     </el-col>
-</el-row>
+  <el-col :span="8">
+     Utilisateurs en ligne :
+  <span v-for="user in usersList" v-bind:key="user">
+    <span>  {{user}} </span>
+    </span>
+    </el-col>
+  <el-col :span="8">
+          <el-button type="primary" @click="() => appendDocument()">Nouveau document</el-button>
+  </el-col>
+      </el-row>
+      </div>
+      </el-row>
+      <div class="box">
+    <ckeditor class="ck-content" :editor="editor" v-model="currentDocument.historyList[0].content" />
+      </div>
+     </el-main>
+  </el-container>
+     <el-footer>
+         © 2005-2020 Lumos.
+     </el-footer>
+</el-container>
 
 <el-dialog
+  center
   v-bind:title="currentHistory.title"
   :visible.sync="dialogVisible"
   width="70%"
   :before-close="handleClose">
-      <el-popconfirm
-  title="Etes vous sûre de vouloir supprimer ce document ?"
-   confirm-button-text='Oui'
-  cancel-button-text='Non'
-  @confirm="() => removeDocument(currentHistory.id)"  
->
-  <el-button 
-  slot="reference">Supprimer le document</el-button>
-</el-popconfirm>
       <el-collapse accordion>
         <div v-for="(hist,index) in currentHistory.historyList" :key="index">
             <el-collapse-item  v-bind:key="hist.date">
            <template slot="title">
-             <el-row>
+             <el-row class="row">
       {{hist.date + ' | ' + hist.author + ' | ' + index}}
-  <el-button type="primary" size="small" @click="() => rollBackHistory(index)">Rollback</el-button>
+  <el-button style="margin-left:50px" type="primary" size="small" @click="() => rollBackHistory(index)">Rollback</el-button>
              </el-row>
     </template>
               <span v-html="hist.content"></span>
@@ -58,7 +84,24 @@
         </div>
       </el-collapse>
   <span slot="footer" class="dialog-footer">
+    <el-row class="row" :gutter="20">
+      <el-col :span="6" :offset="6">
+      <el-popconfirm
+  title="Etes vous sûre de vouloir supprimer ce document ?"
+   confirm-button-text='Oui'
+  cancel-button-text='Non'
+  @confirm="() => removeDocument(currentHistory.id)"  
+>
+  <el-button 
+  style="margin:10px"
+ type="danger" icon="el-icon-delete" circle
+  slot="reference"></el-button>
+</el-popconfirm>
+  </el-col>
+  <el-col :span="6" :offset="6">
     <el-button type="primary" @click="dialogVisible = false">Fermer</el-button>
+  </el-col>
+    </el-row>
   </span>
 </el-dialog>
   </div>
@@ -83,7 +126,7 @@ class Document {
 import io from 'socket.io-client';
 export default {
   name: "Editor",
-  props:["editorData"],
+  props:["editorData","loginName"],
   methods:{
       appendDocument() {
         const newDocument = new Document(Math.random(),Math.random().toString(36).substring(7),[new History(Math.random().toString(36).substring(7),"01/01/2020",Math.random().toString(36).substring(7))]);
@@ -153,3 +196,26 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.row {
+  margin:5%;
+}
+ .el-header, .el-footer {
+    background-color:#3F85ED;
+    color:white;
+    text-align: center;
+    line-height: 60px;
+  }
+  .center {
+    justify-content: center;
+    align-items: center;
+    display: flex;
+  }
+  .box{
+    border-radius: 5px;
+    padding: 15px;
+    margin:15px;
+    background-color: white;
+  }
+</style>
