@@ -21,7 +21,7 @@
   <div @click="() => changeDocument(doc)">
     <el-row class="row" :gutter="20">
       <el-col :span="6" :offset="6">
-      {{doc.title}}
+      {{doc.name}}
   </el-col>
   <el-col :span="6" :offset="3">
     <el-button type="primary" icon="el-icon-edit" size="small" @click="() => changeHistory(doc)" circle></el-button>
@@ -55,7 +55,7 @@
       </div>
       </el-row>
       <div class="box">
-    <ckeditor class="ck-content" :editor="editor" v-model="currentDocument.historyList[0].content" />
+    <ckeditor class="ck-content" :editor="editor" v-model="currentDoc.content" @input="onEditorInput"/>
       </div>
      </el-main>
   </el-container>
@@ -109,6 +109,8 @@
 
 <script>
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+import axios from 'axios';
+var timer = null
 class History {
   constructor(author, date, content){
     this.author=author,
@@ -138,7 +140,15 @@ export default {
         this.dialogVisible = false;
       },
       changeDocument(doc){
-        this.currentDocument = doc;
+        axios.get("http://localhost:3000/document", {params: {name: doc.name}})
+        .then(response => {
+          this.currentDoc = {
+            name: doc.name,
+            content: response.data[0].content
+          }
+          console.log(this.currentDoc);
+        })
+        console.log("changed doc");
       },
       changeHistory(hist){
         this.currentHistory = hist;
@@ -158,20 +168,27 @@ export default {
       handleClose(done) {
             done();
       },
+      before_handlechange() {
+        clearTimeout(timer);
+        timer = setTimeout(() => this.onEditorInput(), 300);
+      },
       onEditorInput(){
         this.socket.emit('SEND_DOCUMENT', {
-          user: 'Michel',
-          doc: this.content
+          user: this.loginName,
+          name: this.currentDoc.name,
+          content: this.currentDoc.content
           });
           console.log("edit sent !")
-      }
+      },
   },
   data() {
     return {
       editor:ClassicEditor,
       search:'',
       usersList:['michel','arnaud'],
+      doclist: [],
       activeNames: [],
+      currentDoc: "",
       dialogVisible: false,
       currentDocument:new Document(0,'Nouveau Doc',[new History("Eric","02/01/2020","Fred")]),
       currentHistory:'',
@@ -187,10 +204,39 @@ export default {
       ],
     }
   },
+  mounted() {
+    axios.get("http://localhost:3000/listdocuments")
+    .then(response => {
+      response.data.forEach(element => {
+        this.doclist.push({ id: element._id, name: element.name}) 
+        });
+        this.changeDocument(this.doclist[0]);
+    })
+    
+    this.socket.emit('hello', {
+      username: this.loginName
+    })
+
+    this.socket.on('users', (data) => {
+      this.usersList = data.users
+    })
+
+    this.socket.on('DOCUMENT', (data) => {
+      if (this.currentDoc.name === data.name) {
+        this.currentDoc.content = data.content
+        }
+    })
+  },
+  beforeDestroy() {
+    clearTimeout(timer);
+    this.socket.emit('bye', {
+      username: this.loginName
+    })
+  },
   computed:{
     filteredList(){
-      return this.documentList.filter(doc=>{
-        return doc.title.toLowerCase().includes(this.search.toLowerCase());
+      return this.doclist.filter(doc=>{
+        return doc.name.toLowerCase().includes(this.search.toLowerCase());
       })
   },
   }
