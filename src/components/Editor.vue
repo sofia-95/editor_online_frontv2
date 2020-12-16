@@ -52,7 +52,7 @@
         <div class="center" style="margin:20px">
     {{currentDoc.name}}
         </div>
-    <ckeditor class="ck-content" :editor="editor" v-model="currentDoc.content" @input="onEditorInput" :config="editorConfig" />
+    <ckeditor class="ck-content" :editor="editor" v-model="currentDoc.content" @input="before_handlechange" :config="editorConfig" />
     <div style="display:none;" id="pdfZone">
               <span v-html="currentDoc.content"></span>
     </div>
