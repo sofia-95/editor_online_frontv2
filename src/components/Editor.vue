@@ -90,15 +90,15 @@
              <el-row>
                 <el-col :span="13">
        <el-tag type="success">
-         {{moment(activity.created_on).format('MMMM Do YYYY, h:mm:ss a')}}
+         {{moment(activity.created_on).format('llll')}}
        </el-tag>
                 </el-col>
-                <el-col :span="3">
+                <el-col :span="5">
 <el-tag type="info">
 {{activity.author}}
 </el-tag>
                 </el-col>
-                <el-col :span="8">
+                <el-col :span="3">
   <el-button style="margin-left:50px" type="primary" size="small" @click="() => rollBackHistory(index)">Rollback</el-button>
                 </el-col>
              </el-row>
@@ -148,6 +148,7 @@ class Document {
   }
 }
 //import Base64UploadAdapter from '@ckeditor/ckeditor5-upload/src/adapters/base64uploadadapter';
+import moment from 'moment';
 import io from 'socket.io-client';
 import ClassicEditor from "@ckeditor/ckeditor5-editor-classic/src/classiceditor";
 import EssentialsPlugin from "@ckeditor/ckeditor5-essentials/src/essentials";
@@ -270,6 +271,7 @@ export default {
         new Document(Math.random(),'Super',[new History("Richard","04/01/2020","Empty")])
       ];
     return {
+      moment: moment,
       isnotapi: true,
       editor: ClassicEditor,
       editorConfig: {
@@ -339,7 +341,6 @@ export default {
     }
   },
   mounted() {
-
     axios.get("http://localhost:3000/listdocuments")
     .then(response => {
       this.doclist = [];
