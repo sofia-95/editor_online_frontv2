@@ -1,11 +1,5 @@
 <template>
   <div id="app">
-    <el-container>
-      <el-header height="100px" class="center">
-      <div class="center" style="width:100%;height:100%;text-align:center;">
-        LUMOS TEXT EDITOR V2
-      </div>
-      </el-header>
   <el-container>
     <el-aside width="400px" style="min-height:400px">
       <div class="box" style="min-height:400px">
@@ -15,6 +9,9 @@
   v-model="search"
   clearable>
 </el-input>
+    </el-row>
+    <el-row>
+          <el-button type="primary" @click="() => appendDocument()">Nouveau document</el-button>
     </el-row>
     <el-row class="row">
   <div v-for="doc in filteredList" :key="doc.id">
@@ -35,33 +32,35 @@
     <el-main>
       <el-row>
       <div class=box>
-      <el-row :gutter="20" class="center" style="width:100%;height:100%;text-align:center;">
-  <el-col :span="8">
+      <el-row class="center" style="width:100%;height:100%;text-align:center;">
+  <el-col :span="12">
      <div style="display:flex;align-items:center;justify-content:center;">
       <el-avatar src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"></el-avatar>
         <span>{{loginName}}</span>
     </div>
     </el-col>
-  <el-col :span="8">
+  <el-col :span="12">
      Utilisateurs en ligne :
   <span v-for="user in usersList" v-bind:key="user">
     <span>  {{user}} </span>
     </span>
     </el-col>
-  <el-col :span="8">
-          <el-button type="primary" @click="() => appendDocument()">Nouveau document</el-button>
-  </el-col>
       </el-row>
       </div>
       </el-row>
       <div class="box">
-    <ckeditor class="ck-content" :editor="editor" v-model="currentDoc.content" @input="onEditorInput"/>
+        <div class="center" style="margin:20px">
+    {{currentDoc.name}}
+        </div>
+    <ckeditor class="ck-content" :editor="editor" v-model="currentDoc.content" @input="onEditorInput" :config="editorConfig" />
+    <div style="display:none;" id="pdfZone">
+              <span v-html="currentDoc.content"></span>
+    </div>
+        <div class="center" style="margin:20px">
+     <el-button size="small" type="success" @click="() => downloadDocument()">Télécharger le document</el-button>
+        </div>
       </div>
      </el-main>
-  </el-container>
-     <el-footer>
-         © 2005-2020 Lumos.
-     </el-footer>
 </el-container>
 
 <el-dialog
@@ -90,8 +89,7 @@
   title="Etes vous sûre de vouloir supprimer ce document ?"
    confirm-button-text='Oui'
   cancel-button-text='Non'
-  @confirm="() => removeDocument(currentHistory.id)"  
->
+  @confirm="() => removeDocument(currentHistory.id)">
   <el-button 
   style="margin:10px"
  type="danger" icon="el-icon-delete" circle
@@ -106,9 +104,7 @@
 </el-dialog>
   </div>
 </template>
-
 <script>
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import axios from 'axios';
 var timer = null
 class History {
@@ -125,7 +121,36 @@ class Document {
     this.historyList=historyList
   }
 }
+//import Base64UploadAdapter from '@ckeditor/ckeditor5-upload/src/adapters/base64uploadadapter';
 import io from 'socket.io-client';
+import ClassicEditor from "@ckeditor/ckeditor5-editor-classic/src/classiceditor";
+import EssentialsPlugin from "@ckeditor/ckeditor5-essentials/src/essentials";
+import BoldPlugin from "@ckeditor/ckeditor5-basic-styles/src/bold";
+import ItalicPlugin from "@ckeditor/ckeditor5-basic-styles/src/italic";
+import LinkPlugin from "@ckeditor/ckeditor5-link/src/link";
+import ParagraphPlugin from "@ckeditor/ckeditor5-paragraph/src/paragraph";
+import Base64UploadAdapter from '@ckeditor/ckeditor5-upload/src/adapters/base64uploadadapter';
+import Table from '@ckeditor/ckeditor5-table/src/table';
+import TableToolbar from '@ckeditor/ckeditor5-table/src/tabletoolbar';
+import Clipboard from '@ckeditor/ckeditor5-clipboard/src/clipboard';
+import MediaEmbed from '@ckeditor/ckeditor5-media-embed/src/mediaembed';
+import Bold from '@ckeditor/ckeditor5-basic-styles/src/bold';
+import Italic from '@ckeditor/ckeditor5-basic-styles/src/italic';
+import Underline from '@ckeditor/ckeditor5-basic-styles/src/underline';
+import Strikethrough from '@ckeditor/ckeditor5-basic-styles/src/strikethrough';
+import Code from '@ckeditor/ckeditor5-basic-styles/src/code';
+import Subscript from '@ckeditor/ckeditor5-basic-styles/src/subscript';
+import Superscript from '@ckeditor/ckeditor5-basic-styles/src/superscript';
+//import EasyImage from '@ckeditor/ckeditor5-easy-image/src/easyimage';
+import ImagePlugin from '@ckeditor/ckeditor5-image/src/image';
+    import ImageCaptionPlugin from '@ckeditor/ckeditor5-image/src/imagecaption';
+    import ImageStylePlugin from '@ckeditor/ckeditor5-image/src/imagestyle';
+    import ImageToolbarPlugin from '@ckeditor/ckeditor5-image/src/imagetoolbar';
+    import ImageUpload from '@ckeditor/ckeditor5-image/src/imageupload';
+
+
+import pdfMake from "pdfmake/build/pdfmake";
+var htmlToPdfmake = require("html-to-pdfmake");
 export default {
   name: "Editor",
   props:["editorData","loginName"],
@@ -194,29 +219,89 @@ export default {
             this.isnotapi = true
           }
       },
+      downloadDocument(){
+        pdfMake.pageLayout = {
+          height: 792,
+          width: 612,
+          margins: Array(4).fill(72)
+          }
+        console.log(document.getElementById("pdfZone").innerHTML)
+        var val = htmlToPdfmake(document.getElementById("pdfZone").innerHTML);
+        pdfMake.createPdf({content:val, pageSize: 'LETTER',  pageMargins: [0, 0, 0, 0]}).download();
+      }
   },
   data() {
+      let documentList = [
+        new Document(Math.random(),'Document1',[new History("Eric","02/01/2020","Fred t"), new History("Fred","01/01/2020","Fred testo manger"),new History("Fred","03/01/2020","Fred testo")]),
+        new Document(Math.random(),'Document3',[new History("Paul","04/01/2020","Vue"),new History("Charles","05/01/2020","Vue JS")]),
+        new Document(Math.random(),'Super',[new History("Richard","04/01/2020","Empty")])
+      ];
     return {
       isnotapi: true,
-      editor:ClassicEditor,
+      editor: ClassicEditor,
+      editorConfig: {
+        plugins: [
+          EssentialsPlugin,
+          BoldPlugin,
+          ItalicPlugin,
+          LinkPlugin,
+          ParagraphPlugin,
+          Base64UploadAdapter,
+          Table,
+          TableToolbar,
+          Clipboard,
+          MediaEmbed,
+          Bold,
+          Italic,
+          Underline,
+          Strikethrough,
+          Code,
+          Subscript,
+          Superscript,
+           ImagePlugin,
+                        ImageCaptionPlugin,
+                        ImageStylePlugin,
+                        ImageToolbarPlugin,
+                        ImageUpload,
+          //EasyImage,
+        ],
+        toolbar: [
+           'bold',
+            'italic', 'link', 'bulletedList', 'numberedList', '|',
+             'insertTable', '|', 'imageUpload', 'mediaEmbed', '|', 
+             'undo',
+              'redo' ,
+           'underline', 'strikethrough', 'code','subscript', 'superscript',
+              ],
+        table: {
+           toolbar: [ 'tableColumn', 'tableRow', 'mergeTableCells' ]
+        },
+        image: {
+        toolbar: [
+               'imageStyle:full',
+               'imageStyle:side',
+                'imageTextAlternative'
+           ]
+ },
+         cloudServices: {
+            tokenUrl: 'https://76684.cke-cs.com/token/dev/243d6805f85beb3073512e847ca4ad68a52faca8351ceb239ebbefe18c82',
+            uploadUrl: 'https://76684.cke-cs.com/easyimage/upload/'
+        }
+      },
       search:'',
       usersList:['michel','arnaud'],
       doclist: [],
       activeNames: [],
       currentDoc: "",
       dialogVisible: false,
-      currentDocument:new Document(0,'Nouveau Doc',[new History("Eric","02/01/2020","Fred")]),
       currentHistory:'',
-    content:this.editorData, editorConfig:{ },
-           socket : io('http://localhost:3000', {
+      currentDocument:documentList[0],
+      content:this.editorData,
+      socket : io('http://localhost:3000', {
         transports: ['websocket'],
         upgrade: false
       }),
-      documentList:[
-        new Document(Math.random(),'Document1',[new History("Eric","02/01/2020","Fred t"), new History("Fred","01/01/2020","Fred testo manger"),new History("Fred","03/01/2020","Fred testo")]),
-        new Document(Math.random(),'Document3',[new History("Paul","04/01/2020","Vue"),new History("Charles","05/01/2020","Vue JS")]),
-        new Document(Math.random(),'Super',[new History("Richard","04/01/2020","Empty")])
-      ],
+      documentList:documentList,
     }
   },
   mounted() {
@@ -277,12 +362,6 @@ export default {
 .row {
   margin:5%;
 }
- .el-header, .el-footer {
-    background-color:#3F85ED;
-    color:white;
-    text-align: center;
-    line-height: 60px;
-  }
   .center {
     justify-content: center;
     align-items: center;
