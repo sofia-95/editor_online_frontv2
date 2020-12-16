@@ -69,19 +69,45 @@
   :visible.sync="dialogVisible"
   width="70%"
   :before-close="handleClose">
+  <div class="block" style="margin-bottom:20px">
+  <div class="radio">
+    Order:
+    <el-radio-group v-model="reverse">
+      <el-radio :label="true">Descendant</el-radio>
+      <el-radio :label="false">Ascendant</el-radio>
+    </el-radio-group>
+  </div>
+  </div>
+  <el-timeline :reverse="reverse">
+    <el-timeline-item
+      v-for="(activity, index) in currentHistory"
+      :key="index"
+      hide-timestamp
+      :timestamp="activity.created_on">
       <el-collapse accordion>
-        <div v-for="(hist,index) in currentHistory" :key="index">
-            <el-collapse-item  v-bind:key="hist.created_on">
+            <el-collapse-item  v-bind:key="activity.created_on">
            <template slot="title">
-             <el-row class="row">
-      {{hist.created_on + ' | ' + hist.author + ' | ' + index}}
+             <el-row>
+                <el-col :span="13">
+       <el-tag type="success">
+         {{moment(activity.created_on).format('MMMM Do YYYY, h:mm:ss a')}}
+       </el-tag>
+                </el-col>
+                <el-col :span="3">
+<el-tag type="info">
+{{activity.author}}
+</el-tag>
+                </el-col>
+                <el-col :span="8">
   <el-button style="margin-left:50px" type="primary" size="small" @click="() => rollBackHistory(index)">Rollback</el-button>
+                </el-col>
              </el-row>
     </template>
-              <span v-html="hist.content"></span>
+              <span v-html="activity.content"></span>
               </el-collapse-item>
-        </div>
       </el-collapse>
+    </el-timeline-item>
+  </el-timeline>
   <span slot="footer" class="dialog-footer">
     <el-row class="row" :gutter="20">
       <el-col :span="6" :offset="6">
@@ -143,14 +169,15 @@ import Subscript from '@ckeditor/ckeditor5-basic-styles/src/subscript';
 import Superscript from '@ckeditor/ckeditor5-basic-styles/src/superscript';
 //import EasyImage from '@ckeditor/ckeditor5-easy-image/src/easyimage';
 import ImagePlugin from '@ckeditor/ckeditor5-image/src/image';
-    import ImageCaptionPlugin from '@ckeditor/ckeditor5-image/src/imagecaption';
-    import ImageStylePlugin from '@ckeditor/ckeditor5-image/src/imagestyle';
-    import ImageToolbarPlugin from '@ckeditor/ckeditor5-image/src/imagetoolbar';
-    import ImageUpload from '@ckeditor/ckeditor5-image/src/imageupload';
+import ImageCaptionPlugin from '@ckeditor/ckeditor5-image/src/imagecaption';
+import ImageStylePlugin from '@ckeditor/ckeditor5-image/src/imagestyle';
+import ImageToolbarPlugin from '@ckeditor/ckeditor5-image/src/imagetoolbar';
+import ImageUpload from '@ckeditor/ckeditor5-image/src/imageupload';
 
 
 import pdfMake from "pdfmake/build/pdfmake";
 var htmlToPdfmake = require("html-to-pdfmake");
+//import moment from 'moment';
 export default {
   name: "Editor",
   props:["editorData","loginName"],
@@ -288,6 +315,7 @@ export default {
         }
       },
       search:'',
+         reverse: true,
       usersList:['michel','arnaud'],
       doclist: [],
       activeNames: [],
@@ -372,5 +400,12 @@ export default {
     padding: 15px;
     margin:15px;
     background-color: white;
+  }
+  .el-collapse-item{
+    background-color: red;
+    border-collapse: collapse;
+  }
+  .el-collapse {
+    border: 0;
   }
 </style>

@@ -27,6 +27,7 @@
     "core-js": "^3.6.5",
     "element-ui": "^2.14.1",
     "html-to-pdfmake": "^2.1.2",
+    "moment": "^2.29.1",
     "pdfmake": "^0.1.68",
     "postcss-loader": "^3.0.0",
     "raw-loader": "^0.5.1",
