@@ -40,7 +40,7 @@
      <div style="display:flex;align-items:center;justify-content:center;">
       <el-avatar src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"></el-avatar>
         <span>{{loginName}}</span>
-    </div> 
+    </div>
     </el-col>
   <el-col :span="8">
      Utilisateurs en ligne :
@@ -66,16 +66,16 @@
 
 <el-dialog
   center
-  v-bind:title="currentHistory.title"
+  v-bind:title="currentHistory[0].name"
   :visible.sync="dialogVisible"
   width="70%"
   :before-close="handleClose">
       <el-collapse accordion>
-        <div v-for="(hist,index) in currentHistory.historyList" :key="index">
-            <el-collapse-item  v-bind:key="hist.date">
+        <div v-for="(hist,index) in currentHistory" :key="index">
+            <el-collapse-item  v-bind:key="hist.created_on">
            <template slot="title">
              <el-row class="row">
-      {{hist.date + ' | ' + hist.author + ' | ' + index}}
+      {{hist.created_on + ' | ' + hist.author + ' | ' + index}}
   <el-button style="margin-left:50px" type="primary" size="small" @click="() => rollBackHistory(index)">Rollback</el-button>
              </el-row>
     </template>
@@ -147,12 +147,21 @@ export default {
             content: response.data[0].content
           }
           console.log(this.currentDoc);
+          axios.get("http://localhost:3000/documenthistory", {params: {name: doc.name}})
+          .then(response => {
+            this.currentHistory = response.data;
+            })
         })
         console.log("changed doc");
       },
       changeHistory(hist){
-        this.currentHistory = hist;
-        this.dialogVisible = true;
+        console.log(hist);
+        axios.get("http://localhost:3000/documenthistory", {params: {name: hist.name}})
+        .then(response => {
+          this.currentHistory = response.data;
+          this.dialogVisible = true
+          this.changeDocument(hist.name)
+        })
       },
       rollBackHistory(index){
         //Delete previous history
@@ -160,9 +169,7 @@ export default {
         console.log(index)
         console.log("LENGTh")
         console.log(this.currentHistory.historyList.length)
-        this.currentHistory.historyList.splice(index, this.currentHistory.historyList.length);
-        this.documentList.map(obj => this.currentHistory.id === obj.id || obj);
-        this.currentDocument = this.currentHistory;
+        this.currentDoc.content = this.currentHistory[index].content;
         //²this.dialogVisible = false;
       },
       handleClose(done) {
@@ -173,16 +180,21 @@ export default {
         timer = setTimeout(() => this.onEditorInput(), 300);
       },
       onEditorInput(){
-        this.socket.emit('SEND_DOCUMENT', {
-          user: this.loginName,
-          name: this.currentDoc.name,
-          content: this.currentDoc.content
-          });
-          console.log("edit sent !")
+        if (this.currentDoc.content !== this.currentHistory[0].content && this.currentDoc.content.includes("&nbsp;", 0) === false && this.isnotapi) {
+          this.socket.emit('SEND_DOCUMENT', {
+            user: this.loginName,
+            name: this.currentDoc.name,
+            content: this.currentDoc.content
+            });
+            console.log("edit sent !")
+          } else {
+            this.isnotapi = true
+          }
       },
   },
   data() {
     return {
+      isnotapi: true,
       editor:ClassicEditor,
       search:'',
       usersList:['michel','arnaud'],
@@ -205,6 +217,7 @@ export default {
     }
   },
   mounted() {
+
     axios.get("http://localhost:3000/listdocuments")
     .then(response => {
       response.data.forEach(element => {
@@ -223,6 +236,7 @@ export default {
 
     this.socket.on('DOCUMENT', (data) => {
       if (this.currentDoc.name === data.name) {
+        this.isnotapi = false
         this.currentDoc.content = data.content
         }
     })
