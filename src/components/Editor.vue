@@ -131,12 +131,15 @@ export default {
   props:["editorData","loginName"],
   methods:{
       appendDocument() {
-        const newDocument = new Document(Math.random(),Math.random().toString(36).substring(7),[new History(Math.random().toString(36).substring(7),"01/01/2020",Math.random().toString(36).substring(7))]);
-        this.documentList.push(newDocument);
+        this.socket.emit('NEW_DOCUMENT', {
+          name: Math.random().toString(36).substring(7),
+          user: this.loginName,
+        });
       },
       removeDocument(id) {
-        const index = this.documentList.findIndex(d => d.id === id);
-        this.documentList.splice(index, 1);
+        this.socket.emit('RM_DOCUMENT', {
+          name: this.currentHistory[id].name,
+        });
         this.dialogVisible = false;
       },
       changeDocument(doc){
@@ -220,6 +223,7 @@ export default {
 
     axios.get("http://localhost:3000/listdocuments")
     .then(response => {
+      this.doclist = [];
       response.data.forEach(element => {
         this.doclist.push({ id: element._id, name: element.name}) 
         });
@@ -232,6 +236,18 @@ export default {
 
     this.socket.on('users', (data) => {
       this.usersList = data.users
+    })
+
+    this.socket.on("INFO_DOC", (data) => {
+      this.doclist = [];
+      data.forEach(element => {
+        this.doclist.push({ id: element._id, name: element.name}) 
+      })
+      if (this.doclist === []) {
+        this.appendDocument();
+      } else {
+        this.changeDocument(this.doclist[0]);
+      }
     })
 
     this.socket.on('DOCUMENT', (data) => {
