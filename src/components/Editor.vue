@@ -325,11 +325,7 @@ export default {
     })
 
     this.socket.on("INFO_DOC", (data) => {
-      this.doclist = [];
-      console.log(data);
-      data.list.forEach(element => {
-        this.doclist.push({ id: element._id, name: element.name})
-      })
+      this.doclist = data.list
       if (this.doclist === []) {
         this.appendDocument();
       } else {
