@@ -52,7 +52,7 @@
         <div class="center" style="margin:20px">
     {{currentDoc.name}}
         </div>
-    <ckeditor class="ck-content" :editor="editor" v-model="currentDoc.content" @input="onEditorInput" :config="editorConfig" />
+    <ckeditor class="ck-content" :editor="editor" v-model="currentDoc.content" @input="before_handlechange" :config="editorConfig" />
     <div style="display:none;" id="pdfZone">
               <span v-html="currentDoc.content"></span>
     </div>
@@ -220,6 +220,7 @@ export default {
         })
       },
       rollBackHistory(index){
+        this.isnotapi = true
         //Delete previous history
         console.log("Index")
         console.log(index)
@@ -231,7 +232,7 @@ export default {
       },
       before_handlechange() {
         clearTimeout(timer);
-        timer = setTimeout(() => this.onEditorInput(), 300);
+        timer = setTimeout(() => this.onEditorInput(), 600);
       },
       onEditorInput(){
         if (this.currentDoc.content !== this.currentHistory[0].content && this.currentDoc.content.includes("&nbsp;", 0) === false && this.isnotapi) {
@@ -254,6 +255,12 @@ export default {
         console.log(document.getElementById("pdfZone").innerHTML)
         var val = htmlToPdfmake(document.getElementById("pdfZone").innerHTML);
         pdfMake.createPdf({content:val, pageSize: 'LETTER',  pageMargins: [0, 0, 0, 0]}).download();
+      },
+      ontabclose(){
+        clearTimeout(timer);
+        this.socket.emit('bye', {
+          username: this.loginName
+          })
       }
   },
   data() {
@@ -342,20 +349,20 @@ export default {
         this.changeDocument(this.doclist[0]);
     })
     
+    addEventListener('beforeunload', this.ontabclose)
+
     this.socket.emit('hello', {
       username: this.loginName
     })
 
     this.socket.on('users', (data) => {
-      this.usersList = data.users
+      console.log("users update!")
+      this.usersList = data
+      console.log(data);
     })
 
     this.socket.on("INFO_DOC", (data) => {
-      this.doclist = [];
-      console.log(data);
-      data.list.forEach(element => {
-        this.doclist.push({ id: element._id, name: element.name})
-      })
+      this.doclist = data.list
       if (this.doclist === []) {
         this.appendDocument();
       } else {
@@ -368,12 +375,6 @@ export default {
         this.isnotapi = false
         this.currentDoc.content = data.content
         }
-    })
-  },
-  beforeDestroy() {
-    clearTimeout(timer);
-    this.socket.emit('bye', {
-      username: this.loginName
     })
   },
   computed:{
