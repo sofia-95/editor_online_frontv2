@@ -193,6 +193,7 @@ export default {
         })
       },
       rollBackHistory(index){
+        this.isnotapi = true
         //Delete previous history
         console.log("Index")
         console.log(index)
@@ -319,6 +320,7 @@ export default {
     })
 
     this.socket.on('users', (data) => {
+      console.log("users update!")
       this.usersList = data.users
     })
 
