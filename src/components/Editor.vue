@@ -89,7 +89,7 @@
   title="Etes vous sûre de vouloir supprimer ce document ?"
    confirm-button-text='Oui'
   cancel-button-text='Non'
-  @confirm="() => removeDocument(currentHistory.id)">
+  @confirm="() => removeDocument()">
   <el-button 
   style="margin:10px"
  type="danger" icon="el-icon-delete" circle
@@ -161,13 +161,14 @@ export default {
           user: this.loginName,
         });
       },
-      removeDocument(id) {
+      removeDocument() {
         this.socket.emit('RM_DOCUMENT', {
-          name: this.currentHistory[id].name,
+          name: this.currentDoc.name,
         });
         this.dialogVisible = false;
       },
       changeDocument(doc){
+        this.isnotapi = false
         axios.get("http://localhost:3000/document", {params: {name: doc.name}})
         .then(response => {
           this.currentDoc = {
@@ -188,17 +189,15 @@ export default {
         .then(response => {
           this.currentHistory = response.data;
           this.dialogVisible = true
-          this.changeDocument(hist.name)
+          this.changeDocument(hist)
         })
       },
       rollBackHistory(index){
         //Delete previous history
         console.log("Index")
         console.log(index)
-        console.log("LENGTh")
-        console.log(this.currentHistory.historyList.length)
         this.currentDoc.content = this.currentHistory[index].content;
-        //²this.dialogVisible = false;
+        this.dialogVisible = false;
       },
       handleClose(done) {
             done();
@@ -325,8 +324,9 @@ export default {
 
     this.socket.on("INFO_DOC", (data) => {
       this.doclist = [];
-      data.forEach(element => {
-        this.doclist.push({ id: element._id, name: element.name}) 
+      console.log(data);
+      data.list.forEach(element => {
+        this.doclist.push({ id: element._id, name: element.name})
       })
       if (this.doclist === []) {
         this.appendDocument();
