@@ -228,6 +228,12 @@ export default {
         console.log(document.getElementById("pdfZone").innerHTML)
         var val = htmlToPdfmake(document.getElementById("pdfZone").innerHTML);
         pdfMake.createPdf({content:val, pageSize: 'LETTER',  pageMargins: [0, 0, 0, 0]}).download();
+      },
+      ontabclose(){
+        clearTimeout(timer);
+        this.socket.emit('bye', {
+          username: this.loginName
+          })
       }
   },
   data() {
@@ -315,13 +321,16 @@ export default {
         this.changeDocument(this.doclist[0]);
     })
     
+    addEventListener('beforeunload', this.ontabclose)
+
     this.socket.emit('hello', {
       username: this.loginName
     })
 
     this.socket.on('users', (data) => {
       console.log("users update!")
-      this.usersList = data.users
+      this.usersList = data
+      console.log(data);
     })
 
     this.socket.on("INFO_DOC", (data) => {
@@ -338,12 +347,6 @@ export default {
         this.isnotapi = false
         this.currentDoc.content = data.content
         }
-    })
-  },
-  beforeDestroy() {
-    clearTimeout(timer);
-    this.socket.emit('bye', {
-      username: this.loginName
     })
   },
   computed:{
