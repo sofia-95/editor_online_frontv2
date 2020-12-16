@@ -197,14 +197,14 @@ export default {
       },
       changeDocument(doc){
         this.isnotapi = false
-        axios.get("http://localhost:3000/document", {params: {name: doc.name}})
+        axios.get("http://back.nlpf.lumos.sigl.epita.fr/document", {params: {name: doc.name}})
         .then(response => {
           this.currentDoc = {
             name: doc.name,
             content: response.data[0].content
           }
           console.log(this.currentDoc);
-          axios.get("http://localhost:3000/documenthistory", {params: {name: doc.name}})
+          axios.get("http://back.nlpf.lumos.sigl.epita.fr/documenthistory", {params: {name: doc.name}})
           .then(response => {
             this.currentHistory = response.data;
             })
@@ -213,7 +213,7 @@ export default {
       },
       changeHistory(hist){
         console.log(hist);
-        axios.get("http://localhost:3000/documenthistory", {params: {name: hist.name}})
+        axios.get("http://back.nlpf.lumos.sigl.epita.fr/documenthistory", {params: {name: hist.name}})
         .then(response => {
           this.currentHistory = response.data;
           this.dialogVisible = true
@@ -333,7 +333,7 @@ export default {
       currentHistory:'',
       currentDocument:documentList[0],
       content:this.editorData,
-      socket : io('http://localhost:3000', {
+      socket : io('http://back.nlpf.lumos.sigl.epita.fr', {
         transports: ['websocket'],
         upgrade: false
       }),
@@ -341,7 +341,7 @@ export default {
     }
   },
   mounted() {
-    axios.get("http://localhost:3000/listdocuments")
+    axios.get("http://back.nlpf.lumos.sigl.epita.fr/listdocuments")
     .then(response => {
       this.doclist = [];
       response.data.forEach(element => {
