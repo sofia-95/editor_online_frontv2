@@ -205,7 +205,7 @@ export default {
       },
       before_handlechange() {
         clearTimeout(timer);
-        timer = setTimeout(() => this.onEditorInput(), 300);
+        timer = setTimeout(() => this.onEditorInput(), 600);
       },
       onEditorInput(){
         if (this.currentDoc.content !== this.currentHistory[0].content && this.currentDoc.content.includes("&nbsp;", 0) === false && this.isnotapi) {
